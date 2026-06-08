@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>A Letter For You</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Petit+Formal+Script&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #1a0a0f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Candlelight glow behind card */
+    .glow {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(180,60,60,0.18) 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation: pulse 4s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      50%       { transform: translate(-50%, -50%) scale(1.12); opacity: 0.7; }
+    }
+
+    #lock-screen {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      animation: fadeIn 1.2s ease forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .seal {
+      font-size: 52px;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 0 18px rgba(220,80,80,0.6));
+      animation: heartbeat 2.4s ease-in-out infinite;
+    }
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      14%       { transform: scale(1.15); }
+      28%       { transform: scale(1); }
+      42%       { transform: scale(1.08); }
+      56%       { transform: scale(1); }
+    }
+
+    .lock-title {
+      font-family: 'Petit Formal Script', cursive;
+      font-size: 2.2rem;
+      color: #e8c4b8;
+      letter-spacing: 0.02em;
+      margin-bottom: 6px;
+      text-shadow: 0 0 30px rgba(220,130,110,0.5);
+    }
+    .lock-subtitle {
+      font-size: 1rem;
+      color: #a07070;
+      font-style: italic;
+      letter-spacing: 0.08em;
+      margin-bottom: 36px;
+    }
+
+    .lock-card {
+    background: rgba(50, 16, 24, 0.92);
+    border: 1px solid rgba(220, 120, 120, 0.25);
+    border-radius: 20px;
+    padding: 40px 44px;
+    width: 360px;
+    backdrop-filter: blur(10px);
+    box-shadow:
+        0 0 60px rgba(140,30,30,0.25),
+        0 10px 40px rgba(0,0,0,0.25);
+    }
+
+    .input-label {
+      display: block;
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #9a6060;
+      margin-bottom: 10px;
+    }
+
+    .password-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.96);
+    border: 2px solid rgba(220, 120, 120, 0.45);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    color: #4a1c24;
+    letter-spacing: 0.3em;
+    text-align: center;
+    outline: none;
+    margin-bottom: 20px;
+
+    box-shadow:
+        0 0 0 1px rgba(255,255,255,0.4),
+        0 8px 25px rgba(0,0,0,0.15);
+
+    transition: all 0.3s ease;
+    }
+
+    .password-input::placeholder {
+    color: rgba(120, 80, 80, 0.45);
+    letter-spacing: 0.1em;
+    }
+
+    .password-hint {
+    font-size: 0.9rem;
+    color: #b88a8a;
+    font-style: italic;
+    margin-top: -10px;
+    margin-bottom: 18px;
+    text-align: center;
+    }
+
+    .password-input:focus {
+    border-color: #e88b9c;
+    background: #ffffff;
+    box-shadow:
+        0 0 0 4px rgba(232, 139, 156, 0.15),
+        0 10px 30px rgba(232, 139, 156, 0.2);
+    }
+    .unlock-btn {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, #7a1a2a 0%, #c23050 100%);
+      border: none;
+      border-radius: 10px;
+      color: #f5ddd5;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+      transition: opacity 0.25s, transform 0.2s;
+    }
+    .unlock-btn:hover { opacity: 0.88; transform: scale(1.02); }
+    .unlock-btn:active { transform: scale(0.98); }
+
+    .error-msg {
+      margin-top: 14px;
+      font-size: 0.85rem;
+      color: #e06060;
+      font-style: italic;
+      min-height: 20px;
+      transition: opacity 0.3s;
+    }
+
+    #letter-screen {
+      display: none;
+      position: relative;
+      z-index: 10;
+      animation: unfold 1s ease forwards;
+    }
+    @keyframes unfold {
+      from { opacity: 0; transform: scale(0.9) translateY(16px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .letter-wrap {
+      width: 520px;
+      max-width: 95vw;
+    }
+
+    .letter-top-deco {
+      text-align: center;
+      margin-bottom: -2px;
+    }
+    .letter-top-deco span {
+      font-size: 1.4rem;
+      opacity: 0.6;
+      letter-spacing: 0.5em;
+      color: #c07080;
+    }
+
+    .envelope-paper {
+      background: #fdf6f0;
+      border-radius: 4px 4px 0 0;
+      padding: 50px 52px 44px;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(180,120,120,0.15);
+    }
+
+    .envelope-paper::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #b83050, #e8607a, #b83050);
+      border-radius: 4px 4px 0 0;
+    }
+
+    .letter-greeting {
+      font-family: 'Petit Formal Script', cursive;
+      font-size: 1.8rem;
+      color: #7a2535;
+      margin-bottom: 22px;
+    }
+
+    .letter-body {
+      font-size: 1.08rem;
+      line-height: 1.95;
+      color: #3d1a22;
+      font-weight: 300;
+    }
+
+    .letter-body p {
+      padding-bottom: 2px;
+      margin-bottom: 18px;
+      text-align: justify;
+    }
+
+    .letter-closing {
+      margin-top: 28px;
+      text-align: right;
+    }
+    .letter-closing-text {
+      font-style: italic;
+      color: #6a2535;
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+    .letter-signature {
+      font-family: 'Petit Formal Script', cursive;
+      font-size: 1.9rem;
+      color: #7a2535;
+    }
+
+    .letter-bottom {
+      background: #f5e6dc;
+      border-radius: 0 0 4px 4px;
+      padding: 16px 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(180,100,100,0.2);
+    }
+    .letter-date {
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      color: #a07060;
+      font-style: italic;
+    }
+    .letter-seal-small { font-size: 20px; opacity: 0.7; }
+
+    .wax-seal {
+      position: absolute;
+      bottom: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 44px;
+      filter: drop-shadow(0 4px 12px rgba(160,30,30,0.5));
+      z-index: 2;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid rgba(180,100,100,0.18);
+      margin: 18px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow"></div>
+
+  <div id="lock-screen">
+    <div class="seal"> ❤️ </div>
+    <p class="lock-title"> A Letter For You </p>
+    <p class="lock-subtitle"> Hi, my pretty girlfriend! </p>
+    <div class="lock-card">
+      <label class="input-label" for="pwd">Enter the password</label>
+      <input
+        class="password-input"
+        type="password"
+        id="pwd"
+        placeholder="••••••••"
+        autocomplete="off"
+        maxlength="20"
+      />
+      <p class="password-hint"> Hint: a very special date </p>
+      <button class="unlock-btn" onclick="tryUnlock()">Open the Letter 🔓</button>
+      <p class="error-msg" id="error-msg"></p>
+    </div>
+  </div>
+
+  <div id="letter-screen">
+    <div class="letter-wrap">
+      <div class="letter-top-deco"><span>❧ ♡ ❧</span></div>
+      <div class="envelope-paper">
+
+        <p class="letter-greeting">To my dearest, Pearl, </p>
+
+        <div class="letter-body">
+          <p>
+            Hello, baby! I just want to tell you how much I love you and how grateful I am to have you in my life.
+            Every day with you feels special and I treasure each moment that I got to share with you.
+          </p>
+          <p>
+            Whatever happens, please know that you will always have me. Things may get rough, but I know to myself
+            that I will always choose you. I am willing to face all of them because a future with you is the one I want most.
+          </p>
+          <p>
+            Thank you for everything, baby! Thank you for being patient with me and making my days brighter. 
+            Being able to experience life with you is one of the greatest blessings I could ever ask for. I love you, baby!
+          </p>
+        </div>
+
+        <div class="letter-closing">
+          <p class="letter-closing-text">Forever yours,</p>
+          <p class="letter-signature">Bubby</p>
+        </div>
+
+        <div class="wax-seal">💌</div>
+      </div>
+      <div class="letter-bottom">
+        <span class="letter-date">always written with love</span>
+        <span class="letter-seal-small"> ❤️ </span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const PASSWORD = "04082026";
+
+    function tryUnlock() {
+      const val = document.getElementById("pwd").value;
+      const err = document.getElementById("error-msg");
+      if (val === PASSWORD) {
+        document.getElementById("lock-screen").style.display = "none";
+        const ls = document.getElementById("letter-screen");
+        ls.style.display = "block";
+      } else {
+        err.textContent = "Oops, got the incorrect password, please try again hehe";
+        document.getElementById("pwd").value = "";
+        document.getElementById("pwd").focus();
+        setTimeout(() => err.textContent = "", 3000);
+      }
+    }
+
+    document.getElementById("pwd").addEventListener("keydown", e => {
+      if (e.key === "Enter") tryUnlock();
+    });
+
+  </script>
+</body>
+</html>
